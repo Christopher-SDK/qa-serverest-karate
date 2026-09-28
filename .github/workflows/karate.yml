@@ -17,6 +17,9 @@ jobs:
     name: Karate (${{ matrix.env }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Si la API pública falla (caída, red lenta, datos raros de terceros), el job queda marcado,
+    # pero no pone en rojo el pipeline: eso lo decide el ambiente local, que sí controlo.
+    continue-on-error: ${{ matrix.env == 'prod' }}
     strategy:
       fail-fast: false
       matrix:
@@ -62,6 +65,7 @@ jobs:
     name: Karate (prod, windows)
     runs-on: windows-latest
     timeout-minutes: 15
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v7
 

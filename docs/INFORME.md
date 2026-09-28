@@ -72,8 +72,12 @@ Uso la validación nativa de Karate (`match ... == esquema`) con marcadores como
 
 Los esquemas validan formato real y no solo tipo: el `_id` debe tener 16 caracteres alfanuméricos,
 `administrador` solo puede ser `"true"` o `"false"`, y el email debe tener forma de email. Para la
-lista, `lista-usuarios.json` valida *cada* usuario del arreglo con el esquema individual
-(`#[] usuarioSchema`), y además compruebo que `quantidade` coincida con el largo real del arreglo.
+lista hay un matiz: en la API pública la lista completa trae usuarios que crearon otras personas y
+que yo no controlo. Si les exigiera el formato estricto, la suite podría fallar por datos ajenos.
+Por eso la lista completa se valida con `usuario-en-lista.json` (que estén todos los campos, con su
+tipo, y ninguno de más) y compruebo que `quantidade` coincida con el largo real del arreglo. El
+formato estricto de `usuario.json` lo aplico a los usuarios que crea la propia suite, incluidos los
+que devuelven los filtros de la lista.
 
 Para comprobar que los esquemas no pasan "por accidente", rompí uno a propósito (cambié `nome` a
 `#number`) y confirmé que la prueba fallaba señalando exactamente el campo.
@@ -86,7 +90,10 @@ ser exactamente lo que envié más el `_id` generado.
 - **Prod** (`https://serverest.dev`, por defecto) y **local** (`npx serverest`, con
   `-Dkarate.env=local`). La suite pasa completa en los dos.
 - En CI el ambiente local es el que decide si el build pasa; el de prod corre en paralelo para
-  enterarme si la API pública cambió.
+  enterarme si la API pública cambió, pero está marcado con `continue-on-error`, así que una caída
+  o un problema de red del sitio público queda a la vista sin poner el pipeline en rojo.
+- El tiempo de respuesta de los `@smoke` (3000 ms, configurable) se exige en local. Contra la API
+  pública solo queda como advertencia en el reporte, porque ahí mide sobre todo la red.
 - La suite corre en paralelo (5 hilos por defecto). Es seguro porque ningún escenario depende de
   datos de otro: cada uno crea lo que necesita.
 
@@ -106,7 +113,7 @@ excluidos de la ejecución normal (fallarían a propósito) y se corren con
 - 58 escenarios en verde contra `serverest.dev` y contra ServeRest local.
 - 2 escenarios `@hallazgo` que reproducen los defectos.
 - 3 pruebas unitarias del generador de datos.
-- Tiempo aproximado: ~40–50 s contra la API pública y menos de 5 s contra la local.
+- Tiempo aproximado: unos 15 s de pruebas contra la API pública y unos pocos segundos contra la local (más el arranque de Maven).
 
 ## 8. Siguientes pasos que propondría
 

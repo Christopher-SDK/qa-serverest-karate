@@ -14,7 +14,7 @@ Feature: Eliminar usuario - DELETE /usuarios/{_id}
     When method delete
     Then status 200
     And match response == { message: '#(msg.eliminado)' }
-    And assert responseTime < slaMs
+    And verificarTiempo(responseTime)
 
     # Verifico que de verdad ya no existe.
     Given path 'usuarios', creado.id

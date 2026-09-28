@@ -38,6 +38,7 @@ cd qa-serverest-karate
 | Contra un ServeRest local                          | `./mvnw test -Dkarate.env=local` (ver abajo) |
 | Contra otra URL                                    | `./mvnw test -DbaseUrl=http://mi-servidor:3000` |
 | Cambiar hilos en paralelo (por defecto 5)          | `./mvnw test -Dthreads=1` |
+| Cambiar el umbral de tiempo de respuesta           | `./mvnw test -DslaMs=2000` (agrega `-DslaEstricto=true` para exigirlo contra la API pública) |
 | Ver los hallazgos (defectos encontrados)           | `./mvnw test -Dkarate.options="--tags @hallazgo"` |
 
 > En Karate, varios `--tags` seguidos funcionan como **Y** (AND), y separados por coma dentro
@@ -72,7 +73,7 @@ npx serverest@latest              # en una terminal (queda escuchando en http://
 |-----|-------------|
 | `@listar` `@registrar` `@buscar` `@actualizar` `@eliminar` | Endpoint que se prueba |
 | `@positivo` / `@negativo` | Tipo de caso |
-| `@smoke` | Lo mínimo para saber que la API funciona; también valida tiempo de respuesta |
+| `@smoke` | Lo mínimo para saber que la API funciona; también mide el tiempo de respuesta |
 | `@e2e` | Ciclo de vida completo de un usuario |
 | `@regla-negocio` | No se puede borrar un usuario con carrito |
 | `@hallazgo` | Documenta un defecto encontrado. **Excluido por defecto** porque falla a propósito |
@@ -104,7 +105,8 @@ src/test/java/
       eliminar-usuario.feature     DELETE /usuarios/{_id}
       ciclo-de-vida.feature        Flujo completo encadenando los 5 endpoints
     schemas/                       Esquemas JSON de las respuestas
-      usuario.json
+      usuario.json                 Estricto: formato de _id, email y administrador
+      usuario-en-lista.json        Campos y tipos, para la lista completa (trae datos ajenos)
       lista-usuarios.json
       registro-exitoso.json
     common/                        Piezas reutilizables
@@ -161,7 +163,10 @@ inexistente **crea** el usuario (upsert).
 - **Caso de regla de negocio**: no se puede eliminar un usuario con carrito. Es el único 400 que
   documenta el Swagger para DELETE y requiere armar login, producto y carrito desde cero.
 - **Escenario de ciclo de vida** que encadena los 5 endpoints como los usaría un administrador.
-- **Validación de tiempo de respuesta** en los escenarios `@smoke` (umbral configurable con `-DslaMs`).
+- **Validación de tiempo de respuesta** en los escenarios `@smoke`, con umbral de 3000 ms
+  configurable con `-DslaMs`. En el ambiente local se exige; contra la API pública solo deja una
+  advertencia en el reporte, porque ahí el tiempo mide sobre todo la red y un servidor compartido,
+  y no quiero que un pico de internet tumbe la suite. Con `-DslaEstricto=true` se exige en cualquier ambiente.
 - **Pruebas unitarias del generador de datos**, para que un error ahí se detecte antes de que
   falle toda la suite.
 - **Hallazgos documentados** como pruebas ejecutables (ver sección anterior).

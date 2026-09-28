@@ -18,7 +18,7 @@ Feature: Registrar usuario - POST /usuarios
     When method post
     Then status 201
     And match response == registroSchema
-    And assert responseTime < slaMs
+    And verificarTiempo(responseTime)
     * def id = response._id
     * limpiarDespues(id)
 

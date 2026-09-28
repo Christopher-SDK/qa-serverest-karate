@@ -18,7 +18,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     When method put
     Then status 200
     And match response == { message: '#(msg.alterado)' }
-    And assert responseTime < slaMs
+    And verificarTiempo(responseTime)
 
     # Confirmo con un GET que el cambio realmente se guardó.
     Given path 'usuarios', id

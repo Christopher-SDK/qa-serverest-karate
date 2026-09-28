@@ -14,10 +14,12 @@ Feature: Listar usuarios - GET /usuarios
     Given path 'usuarios'
     When method get
     Then status 200
+    # La lista trae usuarios de otras personas, así que aquí valido estructura y tipos. El formato
+    # estricto lo valido en los escenarios de filtro, sobre usuarios que crea la propia suite.
     And match response == listaUsuariosSchema
     # "quantidade" tiene que coincidir con el largo real del arreglo; si no, el contador miente.
     And match response.quantidade == response.usuarios.length
-    And assert responseTime < slaMs
+    And verificarTiempo(responseTime)
 
   @positivo
   Scenario: Un usuario recién registrado aparece en la lista
@@ -35,7 +37,9 @@ Feature: Listar usuarios - GET /usuarios
     And param <campo> = valor
     When method get
     Then status 200
+    And match response == listaUsuariosSchema
     And match response.quantidade == 1
+    And match response.usuarios[0] == usuarioSchema
     And match response.usuarios[0] == karate.merge(creado.usuario, { _id: creado.id })
 
     # Filtro solo por campos que en mis datos son únicos (email e _id). Filtrar por nombre o

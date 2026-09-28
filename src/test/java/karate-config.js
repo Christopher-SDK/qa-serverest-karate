@@ -14,16 +14,23 @@ function fn() {
     env: env,
     // -DbaseUrl tiene prioridad, por si hay que apuntar a otro servidor sin tocar este archivo.
     baseUrl: karate.properties['baseUrl'] || urls[env],
-    // Tiempo máximo de respuesta que acepto en los escenarios @smoke. Lo dejo holgado porque la
-    // API pública a veces responde lento, pero sirve para detectar una degradación seria.
+    // Tiempo máximo de respuesta que acepto en los escenarios @smoke (ver verificarTiempo abajo).
     slaMs: parseInt(karate.properties['slaMs'] || '3000'),
+    // Contra un ServeRest local el tiempo mide a la API y el umbral se exige. Contra la API pública
+    // mide sobre todo internet y un servidor compartido que no controlo: ahí solo aviso, para que
+    // un pico de red no tumbe la suite. Con -DslaEstricto=true se exige en cualquier ambiente.
+    slaEstricto: env == 'local' || karate.properties['slaEstricto'] == 'true',
     // Generador de datos de prueba (clase Java en serverest/helpers).
     datos: Java.type('serverest.helpers.UsuarioDataFactory'),
     // Mensajes que devuelve la API. Los centralizo acá porque la API está en portugués y
     // así, si algún mensaje cambia, se corrige en un solo lugar.
     msg: read('classpath:serverest/common/mensajes.json'),
     // Esquemas de respuesta, para reutilizarlos en todos los features.
+    // usuarioSchema es estricto (formato de _id, email y administrador) y lo aplico a los usuarios
+    // que crea la suite. usuarioEnListaSchema solo valida campos y tipos, y lo uso para la lista
+    // completa, que en la API pública trae usuarios de otras personas que no controlo.
     usuarioSchema: read('classpath:serverest/schemas/usuario.json'),
+    usuarioEnListaSchema: read('classpath:serverest/schemas/usuario-en-lista.json'),
     listaUsuariosSchema: read('classpath:serverest/schemas/lista-usuarios.json'),
     registroSchema: read('classpath:serverest/schemas/registro-exitoso.json')
   };
@@ -63,6 +70,16 @@ function fn() {
   // tiene carrito. Por eso primero cancelo los carritos (eso además devuelve el stock), después
   // borro los productos y al final los usuarios. Si el escenario ya limpió algo por su cuenta,
   // repetirlo no hace daño: la API responde 200 con "no encontrado" / "nada eliminado".
+  config.verificarTiempo = function (ms) {
+    var sla = karate.get('slaMs');
+    if (ms <= sla) return;
+    var mensaje = 'La respuesta tardó ' + ms + ' ms y el umbral es ' + sla + ' ms';
+    if (karate.get('slaEstricto')) {
+      karate.fail(mensaje);
+    } else {
+      karate.log('ADVERTENCIA:', mensaje, '(no se exige contra la API pública)');
+    }
+  };
   karate.configure('afterScenario', function () {
     (karate.get('carritosCreados') || []).forEach(function (token) {
       karate.call('classpath:serverest/common/limpieza.feature@carrito', { token: token });

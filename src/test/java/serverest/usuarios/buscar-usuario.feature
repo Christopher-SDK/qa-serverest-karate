@@ -16,7 +16,7 @@ Feature: Buscar usuario por ID - GET /usuarios/{_id}
     And match response == usuarioSchema
     # El esquema valida la forma; esta segunda validación confirma que los valores son los que envié.
     And match response == karate.merge(creado.usuario, { _id: creado.id })
-    And assert responseTime < slaMs
+    And verificarTiempo(responseTime)
 
   @negativo
   Scenario: Buscar un ID con formato válido que no existe devuelve 400
