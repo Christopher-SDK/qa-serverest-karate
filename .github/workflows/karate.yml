@@ -1,0 +1,58 @@
+name: API ServeRest (Karate)
+
+# Corro la suite en dos ambientes:
+#  - local: un ServeRest levantado dentro del runner. Es el que decide si el pipeline pasa,
+#    porque no depende de la red ni de lo que otras personas hagan en la API pública.
+#  - prod: https://serverest.dev, para enterarme si la API real cambió de comportamiento.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    name: Karate (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [local, prod]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        if: matrix.env == 'local'
+        with:
+          node-version: 22
+
+      - name: Levantar ServeRest local
+        if: matrix.env == 'local'
+        run: |
+          npx -y serverest@latest --timeout 3600 > serverest.log 2>&1 &
+          # Espero a que responda antes de lanzar las pruebas (máximo 60 s).
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/usuarios > /dev/null && exit 0
+            sleep 1
+          done
+          echo "ServeRest no levantó a tiempo" && cat serverest.log && exit 1
+
+      - name: Ejecutar pruebas
+        run: mvn -B test -Dkarate.env=${{ matrix.env }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: karate-report-${{ matrix.env }}
+          path: target/karate-reports/
+          retention-days: 14

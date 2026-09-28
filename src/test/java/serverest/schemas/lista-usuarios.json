@@ -1,0 +1,4 @@
+{
+  "quantidade": "#number? _ >= 0",
+  "usuarios": "#[] usuarioSchema"
+}
