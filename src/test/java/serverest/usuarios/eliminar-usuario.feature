@@ -62,6 +62,7 @@ Feature: Eliminar usuario - DELETE /usuarios/{_id}
     When method post
     Then status 201
     * def productoId = response._id
+    * limpiarProductoDespues(productoId, token)
 
     Given path 'carrinhos'
     And header Authorization = token
@@ -69,6 +70,7 @@ Feature: Eliminar usuario - DELETE /usuarios/{_id}
     When method post
     Then status 201
     * def carritoId = response._id
+    * limpiarCarritoDespues(token)
 
     # Lo que realmente estoy probando:
     Given path 'usuarios', creado.id
@@ -76,8 +78,9 @@ Feature: Eliminar usuario - DELETE /usuarios/{_id}
     Then status 400
     And match response == { message: '#(msg.tieneCarrito)', idCarrinho: '#(carritoId)' }
 
-    # Limpieza en orden: cancelo el carrito (devuelve el stock), borro el producto y el usuario
-    # se borra solo en el afterScenario. Además confirma que, sin carrito, ya se puede eliminar.
+    # Ahora deshago todo en orden y así confirmo también que, sin carrito, el usuario sí se puede
+    # eliminar. Si algo de lo anterior falla, el afterScenario cancela el carrito, borra el producto
+    # y borra el usuario por mí (en ese orden), así que no queda nada en la API.
     Given path 'carrinhos', 'cancelar-compra'
     And header Authorization = token
     When method delete

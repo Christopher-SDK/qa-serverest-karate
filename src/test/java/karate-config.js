@@ -28,14 +28,26 @@ function fn() {
     registroSchema: read('classpath:serverest/schemas/registro-exitoso.json')
   };
 
-  // Limpieza automática: cada escenario que crea un usuario llama a limpiarDespues(id), y al
-  // terminar el escenario (pase o falle) borro todo lo que quedó registrado. Lo hago en el
-  // afterScenario y no como último paso porque si una aserción falla a la mitad, los pasos
-  // siguientes no se ejecutan y el usuario quedaría huérfano en la API pública.
+  // Limpieza automática: cada escenario que crea algo en la API (usuario, producto o carrito) lo
+  // registra con estas funciones, y al terminar el escenario (pase o falle) borro todo lo que quedó
+  // registrado. Lo hago en el afterScenario y no como último paso porque si una aserción falla a la
+  // mitad, los pasos siguientes no se ejecutan y los datos quedarían huérfanos en la API pública.
   config.limpiarDespues = function (id) {
     var ids = karate.get('idsCreados') || [];
     ids.push(id);
     karate.set('idsCreados', ids);
+  };
+  // Lo mismo para carritos y productos (solo los usa el escenario del usuario con carrito).
+  // Guardo el token porque la API los identifica por el usuario logueado y exige autorización.
+  config.limpiarCarritoDespues = function (token) {
+    var tokens = karate.get('carritosCreados') || [];
+    tokens.push(token);
+    karate.set('carritosCreados', tokens);
+  };
+  config.limpiarProductoDespues = function (id, token) {
+    var productos = karate.get('productosCreados') || [];
+    productos.push({ id: id, token: token });
+    karate.set('productosCreados', productos);
   };
   // Atajo para los escenarios donde el usuario es solo una precondición: lo crea (con los datos
   // que le pase o con uno generado) y lo deja registrado para la limpieza.
@@ -47,9 +59,18 @@ function fn() {
     karate.get('limpiarDespues')(creado.id);
     return { id: creado.id, usuario: body };
   };
+  // El orden importa: la API no deja borrar un producto que está en un carrito ni un usuario que
+  // tiene carrito. Por eso primero cancelo los carritos (eso además devuelve el stock), después
+  // borro los productos y al final los usuarios. Si el escenario ya limpió algo por su cuenta,
+  // repetirlo no hace daño: la API responde 200 con "no encontrado" / "nada eliminado".
   karate.configure('afterScenario', function () {
-    var ids = karate.get('idsCreados') || [];
-    ids.forEach(function (id) {
+    (karate.get('carritosCreados') || []).forEach(function (token) {
+      karate.call('classpath:serverest/common/limpieza.feature@carrito', { token: token });
+    });
+    (karate.get('productosCreados') || []).forEach(function (producto) {
+      karate.call('classpath:serverest/common/limpieza.feature@producto', producto);
+    });
+    (karate.get('idsCreados') || []).forEach(function (id) {
       karate.call('classpath:serverest/common/eliminar-usuario.feature', { id: id });
     });
   });

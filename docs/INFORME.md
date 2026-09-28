@@ -54,6 +54,11 @@ cambio se guardó (o que el usuario ya no existe). Un 200 sin el efecto esperado
 **Limpieza en `afterScenario`.** Cada usuario que se crea se registra con `limpiarDespues(id)` y
 se borra en el hook `afterScenario`, que corre aunque el escenario falle. Si la limpieza estuviera
 como último paso del escenario, una aserción fallida a la mitad dejaría el usuario huérfano.
+El escenario del usuario con carrito también registra el producto y el carrito que crea
+(`limpiarProductoDespues`, `limpiarCarritoDespues`), y el hook los limpia en el orden que exige la
+API: primero cancela el carrito, después borra el producto y al final el usuario. Si no, un fallo a
+la mitad dejaría los tres en la API, porque no se puede borrar un usuario que tiene carrito. Lo
+comprobé forzando un fallo justo después de crear el carrito: la API quedó igual que antes.
 Después de varias ejecuciones verifiqué contra la API que no quedaba ningún usuario de la suite.
 
 ## 4. Validación de esquemas

@@ -110,6 +110,7 @@ src/test/java/
     common/                        Piezas reutilizables
       crear-usuario.feature        Crea un usuario como precondición
       eliminar-usuario.feature     Borra un usuario (limpieza)
+      limpieza.feature             Cancela carritos y borra productos (limpieza)
       mensajes.json                Mensajes de la API en un solo lugar
     helpers/
       UsuarioDataFactory.java      Generador de datos de prueba (Datafaker)
@@ -151,8 +152,9 @@ inexistente **crea** el usuario (upsert).
 
 ## Qué agregué además de lo pedido (y por qué)
 
-- **Limpieza automática de datos.** Todo usuario que crea un escenario se borra al final, aunque el
-  escenario falle a la mitad. La API es pública y compartida; no quiero dejar basura ni que una
+- **Limpieza automática de datos.** Todo lo que crea un escenario (usuarios, y en el caso del
+  carrito también el producto y el carrito) se borra al final, aunque el escenario falle a la mitad,
+  y en el orden que exige la API: carrito, producto, usuario. La API es pública y compartida; no quiero dejar basura ni que una
   ejecución fallida afecte a la siguiente.
 - **Dos ambientes (`prod` y `local`)** configurables por parámetro, y un pipeline de CI que usa el
   local para decidir si el build pasa, así un problema de red del sitio público no rompe el build.
