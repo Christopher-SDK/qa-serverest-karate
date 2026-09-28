@@ -44,6 +44,14 @@ function fn() {
     ids.push(id);
     karate.set('idsCreados', ids);
   };
+  // Lo llamo justo después de cada POST o PUT a /usuarios, ANTES de cualquier validación: si la
+  // respuesta trae un _id es que se creó un usuario, y lo registro para la limpieza. Si lo
+  // registrara después de validar, una aserción fallida (o una API que por error acepte datos
+  // inválidos en un caso negativo) dejaría ese usuario huérfano en la API pública.
+  config.limpiarSiSeCreo = function () {
+    var respuesta = karate.get('response');
+    if (respuesta && respuesta._id) karate.get('limpiarDespues')(respuesta._id);
+  };
   // Lo mismo para carritos y productos (solo los usa el escenario del usuario con carrito).
   // Guardo el token porque la API los identifica por el usuario logueado y exige autorización.
   config.limpiarCarritoDespues = function (token) {

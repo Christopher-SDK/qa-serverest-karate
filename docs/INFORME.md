@@ -51,9 +51,13 @@ ese campo. Con Scenario Outline cubro todos los campos sin repetir escenarios.
 (POST, PUT, DELETE) no me quedo con el código de estado: hago un GET después para confirmar que el
 cambio se guardó (o que el usuario ya no existe). Un 200 sin el efecto esperado también es un bug.
 
-**Limpieza en `afterScenario`.** Cada usuario que se crea se registra con `limpiarDespues(id)` y
-se borra en el hook `afterScenario`, que corre aunque el escenario falle. Si la limpieza estuviera
-como último paso del escenario, una aserción fallida a la mitad dejaría el usuario huérfano.
+**Limpieza en `afterScenario`.** Cada usuario que se crea se registra para la limpieza y se borra en
+el hook `afterScenario`, que corre aunque el escenario falle. Si la limpieza estuviera como último
+paso del escenario, una aserción fallida a la mitad dejaría el usuario huérfano. El registro se hace
+con `limpiarSiSeCreo()` justo después de cada POST o PUT a `/usuarios`, **antes** de validar nada:
+si la respuesta trae un `_id`, se creó un usuario y queda anotado. Así tampoco queda basura si una
+validación falla antes de tiempo, o si algún día la API acepta por error los datos de un caso
+negativo.
 El escenario del usuario con carrito también registra el producto y el carrito que crea
 (`limpiarProductoDespues`, `limpiarCarritoDespues`), y el hook los limpia en el orden que exige la
 API: primero cancela el carrito, después borra el producto y al final el usuario. Si no, un fallo a

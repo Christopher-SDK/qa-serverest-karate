@@ -14,10 +14,10 @@ Feature: Ciclo de vida completo de un usuario
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 201
     And match response == registroSchema
     * def id = response._id
-    * limpiarDespues(id)
 
     # 2. Buscar por ID
     Given path 'usuarios', id
@@ -38,6 +38,7 @@ Feature: Ciclo de vida completo de un usuario
     Given path 'usuarios', id
     And request actualizado
     When method put
+    * limpiarSiSeCreo()
     Then status 200
     And match response.message == msg.alterado
 

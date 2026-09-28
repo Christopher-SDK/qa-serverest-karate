@@ -16,6 +16,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', id
     And request cambios
     When method put
+    * limpiarSiSeCreo()
     Then status 200
     And match response == { message: '#(msg.alterado)' }
     And verificarTiempo(responseTime)
@@ -33,6 +34,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', id
     And request cambios
     When method put
+    * limpiarSiSeCreo()
     Then status 200
     And match response == { message: '#(msg.alterado)' }
 
@@ -56,11 +58,11 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', datos.idInexistente()
     And request nuevo
     When method put
+    * limpiarSiSeCreo()
     Then status 201
     And match response == registroSchema
     # La API ignora el ID de la URL y genera uno propio: guardo el que devuelve para limpiarlo.
     * def nuevoId = response._id
-    * limpiarDespues(nuevoId)
 
     Given path 'usuarios', nuevoId
     When method get
@@ -74,6 +76,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', id
     And request cambios
     When method put
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { message: '#(msg.emailEnUso)' }
 
@@ -90,6 +93,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', id
     And request cambios
     When method put
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { <campo>: '<campo> é obrigatório' }
 
@@ -106,6 +110,7 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', id
     And request cambios
     When method put
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { email: '#(msg.emailInvalido)', administrador: '#(msg.adminInvalido)' }
 
@@ -118,6 +123,6 @@ Feature: Actualizar usuario - PUT /usuarios/{_id}
     Given path 'usuarios', 'abc'
     And request nuevo
     When method put
-    * if (response._id) limpiarDespues(response._id)
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { id: '#(msg.idInvalido)' }

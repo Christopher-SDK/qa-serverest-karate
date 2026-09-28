@@ -16,11 +16,11 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 201
     And match response == registroSchema
     And verificarTiempo(responseTime)
     * def id = response._id
-    * limpiarDespues(id)
 
     # No me quedo con el 201: consulto el usuario para confirmar que se guardó con los mismos datos.
     Given path 'usuarios', id
@@ -40,6 +40,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { message: '#(msg.emailEnUso)' }
 
@@ -49,6 +50,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     # Comparo con == (igualdad exacta) para comprobar además que la API se queja SOLO del campo que falta.
     And match response == { <campo>: '<campo> é obrigatório' }
@@ -66,6 +68,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     # Comillas dobles porque el mensaje de "administrador" trae comillas simples adentro.
     And match response == { <campo>: "<mensaje>" }
@@ -83,6 +86,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { email: '#(msg.emailInvalido)' }
 
@@ -101,6 +105,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { administrador: '#(msg.adminInvalido)' }
 
@@ -116,6 +121,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request { nome: 123, email: '#(usuario.email)', password: 456, administrador: true }
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response ==
       """
@@ -132,6 +138,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request usuario
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { telefono: 'telefono não é permitido' }
 
@@ -140,6 +147,7 @@ Feature: Registrar usuario - POST /usuarios
     Given path 'usuarios'
     And request {}
     When method post
+    * limpiarSiSeCreo()
     Then status 400
     And match response ==
       """
@@ -163,6 +171,6 @@ Feature: Registrar usuario - POST /usuarios
     And request usuario
     When method post
     # Si el defecto sigue, la API crea el usuario; lo registro para limpiarlo igual.
-    * if (response._id) limpiarDespues(response._id)
+    * limpiarSiSeCreo()
     Then status 400
     And match response == { message: '#(msg.emailEnUso)' }
