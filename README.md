@@ -1,5 +1,7 @@
 # Automatización de la API de Usuarios de ServeRest — Karate DSL
 
+[![CI](https://github.com/Christopher-SDK/qa-serverest-karate/actions/workflows/karate.yml/badge.svg)](https://github.com/Christopher-SDK/qa-serverest-karate/actions/workflows/karate.yml)
+
 Suite de pruebas automatizadas para el recurso `/usuarios` de [ServeRest](https://serverest.dev/),
 hecha con **Karate DSL** sobre Maven y JUnit 5.
 
@@ -18,7 +20,7 @@ El informe con la estrategia y los patrones está en [`docs/INFORME.md`](docs/IN
 ## Instalación
 
 ```bash
-git clone <url-de-este-repo>
+git clone https://github.com/Christopher-SDK/qa-serverest-karate.git
 cd qa-serverest-karate
 mvn -q test-compile      # descarga dependencias y compila; no ejecuta pruebas
 ```
