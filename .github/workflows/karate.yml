@@ -23,15 +23,15 @@ jobs:
         env: [local, prod]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
           cache: maven
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: matrix.env == 'local'
         with:
           node-version: 22
@@ -50,7 +50,7 @@ jobs:
       - name: Ejecutar pruebas
         run: ./mvnw -B test -Dkarate.env=${{ matrix.env }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: karate-report-${{ matrix.env }}
@@ -63,9 +63,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -75,7 +75,7 @@ jobs:
         shell: cmd
         run: mvnw.cmd -B test -Dkarate.env=prod
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: karate-report-prod-windows
