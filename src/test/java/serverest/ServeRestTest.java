@@ -17,9 +17,16 @@ class ServeRestTest {
 
     @Test
     void ejecutarSuite() {
-        // Por defecto excluyo @ignore (features reutilizables que no son pruebas en sí) y @hallazgo
-        // (pruebas que documentan defectos conocidos de la API; ver README). Si paso
-        // -Dkarate.options="--tags @smoke", Karate usa esos tags en lugar de estos.
+        // Excluyo @ignore (features reutilizables que no son pruebas en sí) y @hallazgo (pruebas que
+        // documentan defectos conocidos de la API; ver README).
+        // Ojo: si paso -Dkarate.options="--tags @registrar", Karate REEMPLAZA los tags de abajo por
+        // esos, y los @hallazgo se colarían en la ejecución. Por eso agrego la exclusión también a
+        // karate.options, salvo que yo mismo esté pidiendo correr los hallazgos.
+        String opciones = System.getProperty("karate.options", "");
+        if (!opciones.contains("@hallazgo")) {
+            System.setProperty("karate.options", opciones + " --tags ~@hallazgo");
+        }
+
         Results results = Runner.path("classpath:serverest")
                 .tags("~@ignore", "~@hallazgo")
                 .outputCucumberJson(true)
