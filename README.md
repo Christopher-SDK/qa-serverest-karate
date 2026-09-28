@@ -14,7 +14,8 @@ El informe con la estrategia y los patrones está en [`docs/INFORME.md`](docs/IN
 ## Requisitos
 
 - Java 17 o superior (lo probé con 17 y 23)
-- Maven 3.8 o superior
+- Maven **no es obligatorio**: el repo trae el Maven Wrapper (`mvnw` / `mvnw.cmd`), que descarga
+  la versión correcta la primera vez. Si ya tienes Maven instalado, puedes usar `mvn` en lugar de `./mvnw`.
 - Opcional: Node.js 18+, solo si quieres correr las pruebas contra un ServeRest local
 
 ## Instalación
@@ -22,25 +23,38 @@ El informe con la estrategia y los patrones está en [`docs/INFORME.md`](docs/IN
 ```bash
 git clone https://github.com/Christopher-SDK/qa-serverest-karate.git
 cd qa-serverest-karate
-mvn -q test-compile      # descarga dependencias y compila; no ejecuta pruebas
+./mvnw -q test-compile    # descarga dependencias y compila; no ejecuta pruebas
 ```
 
 ## Cómo ejecutar
 
 | Qué quiero hacer                                   | Comando |
 |----------------------------------------------------|---------|
-| Toda la suite contra https://serverest.dev         | `mvn test` |
-| Solo los escenarios críticos                       | `mvn test -Dkarate.options="--tags @smoke"` |
-| Solo un endpoint                                   | `mvn test -Dkarate.options="--tags @registrar"` |
-| Solo casos negativos de un endpoint                | `mvn test -Dkarate.options="--tags @actualizar --tags @negativo"` |
-| Un solo feature                                    | `mvn test -Dkarate.options="classpath:serverest/usuarios/buscar-usuario.feature"` |
-| Contra un ServeRest local                          | `mvn test -Dkarate.env=local` (ver abajo) |
-| Contra otra URL                                    | `mvn test -DbaseUrl=http://mi-servidor:3000` |
-| Cambiar hilos en paralelo (por defecto 5)          | `mvn test -Dthreads=1` |
-| Ver los hallazgos (defectos encontrados)           | `mvn test -Dkarate.options="--tags @hallazgo"` |
+| Toda la suite contra https://serverest.dev         | `./mvnw test` |
+| Solo los escenarios críticos                       | `./mvnw test -Dkarate.options="--tags @smoke"` |
+| Solo un endpoint                                   | `./mvnw test -Dkarate.options="--tags @registrar"` |
+| Solo casos negativos de un endpoint                | `./mvnw test -Dkarate.options="--tags @actualizar --tags @negativo"` |
+| Un solo feature                                    | `./mvnw test -Dkarate.options="classpath:serverest/usuarios/buscar-usuario.feature"` |
+| Contra un ServeRest local                          | `./mvnw test -Dkarate.env=local` (ver abajo) |
+| Contra otra URL                                    | `./mvnw test -DbaseUrl=http://mi-servidor:3000` |
+| Cambiar hilos en paralelo (por defecto 5)          | `./mvnw test -Dthreads=1` |
+| Ver los hallazgos (defectos encontrados)           | `./mvnw test -Dkarate.options="--tags @hallazgo"` |
 
 > En Karate, varios `--tags` seguidos funcionan como **Y** (AND), y separados por coma dentro
 > del mismo `--tags` funcionan como **O** (OR): `--tags @listar,@buscar`.
+
+### En Windows
+
+Usa `mvnw.cmd` en lugar de `./mvnw`. En **PowerShell** además hay que poner cada `-D...` entre
+comillas completas, porque PowerShell corta el argumento en el punto:
+
+```powershell
+.\mvnw.cmd test
+.\mvnw.cmd test "-Dkarate.options=--tags @smoke"
+.\mvnw.cmd test "-Dkarate.env=local"
+```
+
+En `cmd.exe` funcionan igual que en el resto de la tabla, cambiando `./mvnw` por `mvnw.cmd`.
 
 ### Correr contra un ServeRest local
 
@@ -49,7 +63,7 @@ se puede levantar ServeRest en la propia máquina:
 
 ```bash
 npx serverest@latest              # en una terminal (queda escuchando en http://localhost:3000)
-mvn test -Dkarate.env=local       # en otra
+./mvnw test -Dkarate.env=local    # en otra
 ```
 
 ### Tags
